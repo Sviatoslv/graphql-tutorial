@@ -7,7 +7,7 @@ import withHocs from './DirectorsSearchHoc';
 class DirectorsSearch extends React.Component {
 
   render() {
-    const { classes } = this.props;
+    const { classes, name, handleQuery } = this.props;
 
     return (
       <div className={classes.search}>
@@ -16,6 +16,9 @@ class DirectorsSearch extends React.Component {
         </div>
         <InputBase
           placeholder="Search…"
+
+          onChange={handleQuery}
+          value={name}
           classes={{
             root: classes.inputRoot,
             input: classes.inputInput,

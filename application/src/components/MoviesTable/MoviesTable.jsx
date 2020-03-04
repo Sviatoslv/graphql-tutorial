@@ -14,18 +14,16 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CreateIcon from '@material-ui/icons/Create';
 
 import MoviesDialog from '../MoviesDialog/MoviesDialog';
+import MoviesForm from '../MoviesForm/MoviesForm';
+import SearchForm from '../SearchForm/SearchForm';
 
 import withHocs from './MoviesTableHoc';
-
-const movies = [
-  { id: 1, name: 'Pulp Fiction', genre: 'Crime', rate: 10, director: { name: 'Quentin Tarantino' }, watched: true },
-  { id: 2, name: 'Lock, Stock and Two Smoking Barrels', genre: 'Crime-comedy', rate: 9, director: { name: 'Guy Ritchie' }, watched: false },
-];
 
 class MoviesTable extends React.Component {
   state = {
     anchorEl: null,
     openDialog: false,
+    searchValue: '',
   };
 
   handleDialogOpen = () => { this.setState({ openDialog: true }); };
@@ -50,14 +48,31 @@ class MoviesTable extends React.Component {
     this.handleClose();
   };
 
-  render() {
-    const { anchorEl, openDialog, data: activeElem = {} } = this.state;
+  handleQuery = event => {
+    const { value } = event.target;
+    const { data } = this.props;
 
-    const { classes, data } = this.props;
-    console.log('---data', data);
+    this.setState({
+      searchValue: value,
+    });
+
+    data.fetchMore({
+      variables: { name: value },
+      updateQuery: (previousResult, { fetchMoreResult }) => fetchMoreResult,
+    })
+  };
+
+  render() {
+    const { anchorEl, openDialog, data: activeElem = {}, searchValue } = this.state;
+    const { classes, data, state, handleChange, handleCheckboxChange, handleSelectChange, onClose} = this.props;
+    const { movies = [] } = data;
 
     return (
       <>
+        <MoviesForm handleChange={handleChange} handleSelectChange={handleSelectChange} handleCheckboxChange={handleCheckboxChange} selectedValue={state} open={state.open} onClose={onClose} />
+
+        <SearchForm searchValue={searchValue} handleQuery={this.handleQuery}/>
+
         <MoviesDialog open={openDialog} handleClose={this.handleDialogClose} id={activeElem.id} />
         <Paper className={classes.root}>
           <Table>
@@ -78,7 +93,7 @@ class MoviesTable extends React.Component {
                     <TableCell component="th" scope="row">{movie.name}</TableCell>
                     <TableCell>{movie.genre}</TableCell>
                     <TableCell align="right">{movie.rate}</TableCell>
-                    <TableCell>{movie.director.name}</TableCell>
+                    <TableCell>{movie.director?.name}</TableCell>
                     <TableCell>
                       <Checkbox checked={movie.watched} disabled />
                     </TableCell>

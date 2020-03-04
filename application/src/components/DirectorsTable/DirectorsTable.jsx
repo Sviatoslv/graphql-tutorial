@@ -13,18 +13,15 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CreateIcon from '@material-ui/icons/Create';
 
 import DirectorsDialog from '../DirectorsDialog/DirectorsDialog';
+import DirectorsSearch from '../DirectorsSearch/DirectorsSearch';
 
 import withHocs from './DirectorsTableHoc';
-
-const directors = [
-  { id: 1, name: 'Quentin Tarantino', age: 55, movies: [ { name: 'Movie 1' }, { name: 'Movie 2' } ] },
-  { id: 2, name: 'Guy Ritchie', age: 50, movies: [ { name: 'Movie 1' }, { name: 'Movie 2' } ] }
-];
 
 class DirectorsTable extends React.Component {
   state = {
     anchorEl: null,
     openDialog: false,
+    searchValue: '',
   };
 
   handleDialogOpen = () => { this.setState({ openDialog: true }); };
@@ -49,12 +46,31 @@ class DirectorsTable extends React.Component {
     this.handleClose();
   };
 
+  handleQuery = event => {
+    const { value } = event.target;
+    const { data } = this.props;
+
+    this.setState({
+      searchValue: value,
+    });
+
+    data.fetchMore({
+      variables: { name: value },
+      updateQuery: (previousResult, { fetchMoreResult }) => fetchMoreResult,
+    })
+  };
+
   render() {
     const { anchorEl, openDialog, data: activeElem = {} } = this.state;
-    const { classes } = this.props;
+    const { classes, data } = this.props;
+    const { directors = [] } = data;
 
     return (
       <>
+        <Paper>
+          <DirectorsSearch name={this.searchValue} handleQuery={this.handleQuery} />
+        </Paper>
+
         <DirectorsDialog open={openDialog} handleClose={this.handleDialogClose} id={activeElem.id} />
         <Paper className={classes.root}>
           <Table>
